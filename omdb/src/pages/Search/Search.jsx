@@ -6,20 +6,30 @@ import MovieCard from "../../components/MovieCard/MovieCard"
 const Search = () => {
     const [movieName, setMovieName] = useState("")
     const [movies, setMovies] = useState(undefined)
+    const [error, setError] = useState(undefined)
 
     useEffect(() => {
         console.log(movies)
     }, [movies])
 
     const handleSearch = async () => {
+        setMovies(undefined)
+        setError(undefined)
         try {
+            const normalizedName = movieName.trim()
+            if (normalizedName.length === 0) return
+
             const parameters = new URLSearchParams({
-                apikey: import.meta.env.VITE_OMDB_APIKEY, s: movieName, page: 1
+                apikey: import.meta.env.VITE_OMDB_APIKEY, s: normalizedName, page: 1
             })
             const res = await fetch(`https://www.omdbapi.com/?${parameters.toString()}`)
             const json = await res.json()
+            if (json.Response === "False") throw new Error(
+                "Не получилось получить фильмы"
+            )
             setMovies(json)
         } catch (err) {
+            setError(err)
             console.error(err)
         }
     }
@@ -35,7 +45,9 @@ const Search = () => {
                     />
                     <button onClick={handleSearch} className="search-button">Search</button>
                 </div>
+                {error && <p>{error.message}</p>}
                 {movies && <Stats {...movies} />}
+
             </div>
 
             <div className="movie-grid">

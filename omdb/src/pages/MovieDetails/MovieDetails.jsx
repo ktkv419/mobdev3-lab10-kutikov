@@ -1,6 +1,35 @@
+import { useParams } from "react-router-dom"
 import "./MovieDetails.css"
+import { useEffect } from "react"
 
 const MovieDetails = () => {
+    const { id } = useParams()
+
+    useEffect(() => {
+        const handleSearch = async () => {
+            setMovies(undefined)
+            setError(undefined)
+            try {
+                const normalizedName = movieName.trim()
+                if (normalizedName.length === 0) return
+
+                const parameters = new URLSearchParams({
+                    apikey: import.meta.env.VITE_OMDB_APIKEY, s: normalizedName, page: 1
+                })
+                const res = await fetch(`https://www.omdbapi.com/?${parameters.toString()}`)
+                const json = await res.json()
+                if (json.Response === "False") throw new Error(
+                    "Не получилось получить фильмы"
+                )
+                setMovies(json)
+            } catch (err) {
+                setError(err)
+                console.error(err)
+            }
+        }
+        handleSearch()
+    }, [])
+
     return (
         <div className="container">
             <a href="#" className="back-button">← Back to Search</a>
