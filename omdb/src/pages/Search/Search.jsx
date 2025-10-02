@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react"
 import "./Search.css"
+import Stats from "../../components/Stats/Stats"
+import MovieCard from "../../components/MovieCard/MovieCard"
 
 const Search = () => {
     const [movieName, setMovieName] = useState("")
-    const [movies, setMovies] = useState([])
+    const [movies, setMovies] = useState(undefined)
+
     useEffect(() => {
         console.log(movies)
     }, [movies])
 
     const handleSearch = async () => {
         try {
-            const res = await fetch(`http://www.omdbapi.com/?apikey=${API_KEY}&s=batman&page=1`)
+            const parameters = new URLSearchParams({
+                apikey: import.meta.env.VITE_OMDB_APIKEY, s: movieName, page: 1
+            })
+            const res = await fetch(`https://www.omdbapi.com/?${parameters.toString()}`)
             const json = await res.json()
-            console.log(json)
+            setMovies(json)
         } catch (err) {
             console.error(err)
         }
@@ -24,17 +30,16 @@ const Search = () => {
                 <h1>🎬 Movie Search Results</h1>
                 <div className="search-container">
                     <input type="text" className="search-input" placeholder="Search for movies..."
-                    value={movieName}
-                    onChange={(e) => setMovieName(e.target.value)}
+                        value={movieName}
+                        onChange={(e) => setMovieName(e.target.value)}
                     />
                     <button onClick={handleSearch} className="search-button">Search</button>
                 </div>
-                <div className="results-info">
-                    Total Results: 201 | Showing: 10 movies
-                </div>
+                {movies && <Stats {...movies} />}
             </div>
 
             <div className="movie-grid">
+                {movies && movies.Search.map((movie) => <MovieCard {...movie} />)}
                 {/* <div className="movie-card">
                     <div className="poster-container">
                         <img src="https://m.media-amazon.com/images/M/MV5BNzY3OWQ5NDktNWQ2OC00ZjdlLThkMmItMDhhNDk3NTFiZGU4XkEyXkFqcGc@._V1_SX300.jpg" alt="Joker">
