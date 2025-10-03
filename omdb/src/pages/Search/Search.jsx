@@ -6,20 +6,30 @@ import MovieCard from "../../components/MovieCard/MovieCard"
 const Search = () => {
     const [movieName, setMovieName] = useState("")
     const [movies, setMovies] = useState(undefined)
+    const [error, setError] = useState("")
 
     useEffect(() => {
         console.log(movies)
     }, [movies])
 
     const handleSearch = async () => {
+        setError("")
+        setMovies(undefined)
         try {
+            const trimmedMovieName = movieName.trim()
+            if (trimmedMovieName.length <= 0) return
+
             const parameters = new URLSearchParams({
                 apikey: import.meta.env.VITE_OMDB_APIKEY, s: movieName, page: 1
             })
             const res = await fetch(`https://www.omdbapi.com/?${parameters.toString()}`)
             const json = await res.json()
+            if (json.Response === "False") {
+                throw new Error("Не получилось получить фильмы")
+            }
             setMovies(json)
         } catch (err) {
+            setError(err.message)
             console.error(err)
         }
     }
@@ -35,11 +45,12 @@ const Search = () => {
                     />
                     <button onClick={handleSearch} className="search-button">Search</button>
                 </div>
+                {error && <p>{error}</p>}
                 {movies && <Stats {...movies} />}
             </div>
 
             <div className="movie-grid">
-                {movies && movies.Search.map((movie) => <MovieCard {...movie} />)}
+                {movies && movies.Search.map((movie) => <MovieCard key={movie.imdbID} {...movie} />)}
                 {/* <div className="movie-card">
                     <div className="poster-container">
                         <img src="https://m.media-amazon.com/images/M/MV5BNzY3OWQ5NDktNWQ2OC00ZjdlLThkMmItMDhhNDk3NTFiZGU4XkEyXkFqcGc@._V1_SX300.jpg" alt="Joker">

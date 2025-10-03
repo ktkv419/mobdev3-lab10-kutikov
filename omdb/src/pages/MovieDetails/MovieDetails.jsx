@@ -1,9 +1,31 @@
+import { Link, useParams } from "react-router-dom"
 import "./MovieDetails.css"
+import { useEffect, useState } from "react"
 
 const MovieDetails = () => {
+    const { id } = useParams()
+    const [movieDetails, setMovieDetails] = useState(undefined)
+
+    useEffect(() => {
+        const handleSearch = async () => {
+            try {
+                const parameters = new URLSearchParams({
+                    apikey: import.meta.env.VITE_OMDB_APIKEY, i: id
+                })
+                const res = await fetch(`https://www.omdbapi.com/?${parameters.toString()}`)
+                const json = await res.json()
+                console.log(json);
+                setMovieDetails(json)
+            } catch (err) {
+                console.error(err)
+            }
+        }
+        handleSearch()
+    }, [])
+
     return (
         <div className="container">
-            <a href="#" className="back-button">← Back to Search</a>
+            <Link to="/" className="back-button">← Back to Search</Link>
 
             <div className="movie-detail-card">
                 <div className="movie-header">
